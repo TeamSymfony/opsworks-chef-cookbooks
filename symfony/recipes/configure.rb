@@ -33,4 +33,14 @@ node[:deploy].each do |application, deploy|
       end
   end
 
+  # Dump Symfony asset files if assetic_dump option is defined in the application configuration
+  if node[:custom_env][application.to_s].has_key?("assetic_dump")
+      execute 'clear_symfony_cache_prod' do
+        user    "root"
+        cwd     "#{deploy[:deploy_to]}/current"
+        command "php app/console assetic:dump --env=prod"
+        action :run
+      end
+  end
+
 end
