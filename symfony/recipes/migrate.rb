@@ -7,7 +7,7 @@ node[:deploy].each do |application, deploy|
     user "root"
     cwd "#{deploy[:deploy_to]}/current"
     code <<-EOH
-    php app/console doctrine:migrations:migrate --dry-run
+    php app/console doctrine:migrations:migrate --no-interaction
     EOH
   end
 end 

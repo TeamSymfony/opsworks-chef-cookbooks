@@ -42,5 +42,9 @@ node[:deploy].each do |application, deploy|
         action :run
       end
   end
+  
+  if node[:custom_env][application.to_s].has_key?("doctrine_migrate")
+    include_recipe 'symfony::migrate'
+  end;
 
 end
