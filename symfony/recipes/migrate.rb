@@ -9,5 +9,6 @@ node[:deploy].each do |application, deploy|
     code <<-EOH
     php app/console doctrine:migrations:migrate --no-interaction
     EOH
+    only_if { node[:custom_env][application.to_s].has_key?("doctrine_migrate") }
   end
-end 
+end
