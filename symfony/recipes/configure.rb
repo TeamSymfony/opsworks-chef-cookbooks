@@ -9,12 +9,14 @@ node[:deploy].each do |application, deploy|
     $path_console = 'app/console'
     $path_logs = 'app/logs'
     $path_cache = 'app/cache'
+    $path_sessions = 'app/sessions'
 
     # If configured, set symfony version to 3
     if node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
         $path_console = 'bin/console'
         $path_logs = 'var/logs'
         $path_cache = 'var/cache'
+        $path_sessions = 'var/sessions'
     end
 
     # Build cache and logs folder and set acl
@@ -25,9 +27,9 @@ node[:deploy].each do |application, deploy|
         code <<-EOH
         mkdir -p #{$path_cache} #{$path_logs}
         mount -o remount,acl /srv/www
-        setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX #{$path_cache} #{$path_logs}
-        setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx #{$path_cache} #{$path_logs}
-        chown -R www-data:www-data #{$path_cache} #{$path_logs}
+        setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX #{$path_cache} #{$path_logs} #{$path_sessions}
+        setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx #{$path_cache} #{$path_logs} #{$path_sessions}
+        chown -R www-data:www-data #{$path_cache} #{$path_logs} #{$path_sessions}
         EOH
     end
 
