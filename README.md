@@ -18,6 +18,9 @@ Supports Chef 11.10
 - Set the SSH key if you have one, if not this can be left blank as long as the repo is public.
 - Depending on what recipes you use you may need to set a Custom Chef JSON.
 
+# Credits
+* Onema (https://github.com/onema/opsworks-chef-cookbooks) for allowing the fork for this repository.
+
 # MIT LICENSE
 Copyright (c) 2013 TeamSymfony
 
