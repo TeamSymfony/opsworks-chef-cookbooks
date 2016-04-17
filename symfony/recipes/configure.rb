@@ -5,14 +5,14 @@
 
 
 node[:deploy].each do |application, deploy|
-    
+
     $path_console = 'app/console'
     $path_logs = 'app/logs'
     $path_cache = 'app/cache'
 
     # If configured, set symfony version to 3
     if node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
-        $path_console = 'app/console'
+        $path_console = 'bin/console'
         $path_logs = 'var/logs'
         $path_cache = 'var/cache'
     end
