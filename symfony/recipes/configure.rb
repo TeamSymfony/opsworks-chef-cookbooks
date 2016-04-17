@@ -2,18 +2,21 @@
 # http://symfony.com/doc/2.2/book/installation.html
 # https://help.ubuntu.com/community/FilePermissionsACLs
 
-$path_console = 'app/console'
-$path_logs = 'app/logs'
-$path_cache = 'app/cache'
 
-# If configured, set symfony version to 3
-if node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
-    $path_console = 'app/console'
-    $path_logs = 'var/logs'
-    $path_cache = 'var/cache'
-end
 
 node[:deploy].each do |application, deploy|
+    
+    $path_console = 'app/console'
+    $path_logs = 'app/logs'
+    $path_cache = 'app/cache'
+
+    # If configured, set symfony version to 3
+    if node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
+        $path_console = 'app/console'
+        $path_logs = 'var/logs'
+        $path_cache = 'var/cache'
+    end
+
     # Build cache and logs folder and set acl
     script 'update_acl' do
         interpreter 'bash'
