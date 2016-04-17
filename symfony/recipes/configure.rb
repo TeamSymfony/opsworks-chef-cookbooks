@@ -2,72 +2,64 @@
 # http://symfony.com/doc/2.2/book/installation.html
 # https://help.ubuntu.com/community/FilePermissionsACLs
 
+$path_console = 'app/console'
+$path_logs = 'app/logs'
+$path_cache = 'app/cache'
+
+# If configured, set symfony version to 3
+if node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
+    $path_console = 'app/console'
+    $path_logs = 'var/logs'
+    $path_cache = 'var/cache'
+end
+
 node[:deploy].each do |application, deploy|
-    # Set ACL rules to give proper permission to cache and logs
-    if node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
-        script 'update_acl' do
-            interpreter 'bash'
-            user 'root'
-            cwd "#{deploy[:deploy_to]}/current"
-            code <<-EOH
-            mkdir -p var/cache var/logs
-            mount -o remount,acl /srv/www
-            setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX var/cache/ var/logs/
-            setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx var/cache/ var/logs/
-            EOH
-        end
+    # Build cache and logs folder and set acl
+    script 'update_acl' do
+        interpreter 'bash'
+        user 'root'
+        cwd "#{deploy[:deploy_to]}/current"
+        code <<-EOH
+        mkdir -p var/cache var/logs
+        mount -o remount,acl /srv/www
+        setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX #{$path_cache} #{$path_logs}
+        setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx #{$path_cache} #{$path_logs}
+        EOH
     end
 
-    if node[:custom_env][application.to_s]['symfony_version'] != 'symfony3'
-        script 'update_acl' do
-            interpreter 'bash'
-            user 'root'
-            cwd "#{deploy[:deploy_to]}/current"
-            code <<-EOH
-            mkdir -p app/cache app/logs
-            mount -o remount,acl /srv/www
-            setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX app/cache/ app/logs/
-            setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx app/cache/ app/logs/
-            EOH
-        end
-    end
-
-    # Create the parameters.yml file.
+    # If configured, build parameters.yml
     include_recipe 'symfony::paramconfig'
 
     # Install dependencies using composer install
     include_recipe 'composer::install'
 
-    # Clear and warm-up Symfony cache if warmup_cache option is defined in the application configuration
-    if node[:custom_env][application.to_s].key?('warmup_cache') && node[:custom_env][application.to_s]['symfony_version'] == 'symfony3'
-        execute 'clear_symfony_cache_prod' do
+    # If configured, warmup Symfony cache
+    if node[:custom_env][application.to_s]['warmup_cache']
+        execute 'warmup_symfony_prod_cache' do
             user    'root'
             cwd     "#{deploy[:deploy_to]}/current"
-            command 'php bin/console cache:clear --env=prod --no-debug'
+            command 'php #{$path_console} cache:clear --env=prod --no-debug'
             action :run
         end
     end
 
-    if node[:custom_env][application.to_s].key?('warmup_cache') && node[:custom_env][application.to_s]['symfony_version'] != 'symfony3'
-        execute 'clear_symfony_cache_prod' do
+    # If configured, dump Symfony assets
+    if node[:custom_env][application.to_s]['assetic_dump']
+        execute 'dump_symfony_prod_assets' do
             user    'root'
             cwd     "#{deploy[:deploy_to]}/current"
-            command 'php app/console cache:clear --env=prod --no-debug'
+            command 'php #{$path_console} assetic:dump --env=prod'
             action :run
         end
     end
 
-    # Dump Symfony asset files if assetic_dump option is defined in the application configuration
-    if node[:custom_env][application.to_s].key?('assetic_dump') && node[:custom_env][application.to_s]['symfony_version'] != 'symfony3'
-        execute 'clear_symfony_cache_prod' do
+    # If configured, migrate Doctrine migrations
+    if node[:custom_env][application.to_s]['doctrine_migrate']
+        execute 'migrate_doctrine_prod_migrations' do
             user    'root'
             cwd     "#{deploy[:deploy_to]}/current"
-            command 'php app/console assetic:dump --env=prod'
+            command 'php #{$path_console} doctrine:migrations:migrate --no-interaction'
             action :run
         end
-    end
-
-    if node[:custom_env][application.to_s].key?('doctrine_migrate')
-        include_recipe 'symfony::migrate'
     end
 end
