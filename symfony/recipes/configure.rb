@@ -27,6 +27,7 @@ node[:deploy].each do |application, deploy|
         mount -o remount,acl /srv/www
         setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX #{$path_cache} #{$path_logs}
         setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx #{$path_cache} #{$path_logs}
+        chown -R www-data:www-data #{$path_cache} #{$path_logs}
         EOH
     end
 
