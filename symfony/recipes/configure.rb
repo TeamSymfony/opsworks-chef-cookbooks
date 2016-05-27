@@ -25,11 +25,11 @@ node[:deploy].each do |application, deploy|
         user 'root'
         cwd "#{deploy[:deploy_to]}/current"
         code <<-EOH
-        mkdir -p #{$path_cache} #{$path_logs} #{$path_sessions}
+        mkdir -p #{$path_cache} #{$path_logs} #{$path_sessions} web/cache
         mount -o remount,acl /srv/www
-        setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX #{$path_cache} #{$path_logs} #{$path_sessions}
-        setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx #{$path_cache} #{$path_logs} #{$path_sessions}
-        chown -R www-data:www-data #{$path_cache} #{$path_logs} #{$path_sessions}
+        setfacl -R -m u:www-data:rwX -m u:ubuntu:rwX #{$path_cache} #{$path_logs} #{$path_sessions} web/cache
+        setfacl -dR -m u:www-data:rwx -m u:ubuntu:rwx #{$path_cache} #{$path_logs} #{$path_sessions} web/cache
+        chown -R www-data:www-data #{$path_cache} #{$path_logs} #{$path_sessions} web/cache
         EOH
     end
 
