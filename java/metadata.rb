@@ -1,0 +1,6 @@
+name              "java"
+maintainer        "Brian Gharibaan"
+maintainer_email  "brian@jongensvantechniek.nl"
+license           "MIT"
+description       "Set of recipes to help setup java applications."
+version           "1.0.0"
